@@ -1,0 +1,32 @@
+export const filterOptions = {
+  brands: [
+    "Roadster",
+    "HRX",
+    "WROGN",
+    "Puma",
+    "Allen Solly",
+    "Levi's",
+    "H&M",
+    "Nike",
+    "Tommy Hilfiger",
+    "Zara",
+    "United Colors of Benetton",
+    "Adidas",
+  ],
+  categories: ["Casual", "Sports", "Formal"],
+  sizes: ["S", "M", "L", "XL", "XXL"],
+  colors: ["Red", "Blue", "Black", "White", "Navy Blue", "Grey", "Green"],
+  fabrics: ["Cotton", "Polyester", "Cotton Blend", "Dri-FIT", "ClimaLite"],
+  priceRanges: [
+    { label: "Under ₹500", min: 0, max: 500 },
+    { label: "₹500 - ₹1000", min: 500, max: 1000 },
+    { label: "₹1000 - ₹1500", min: 1000, max: 1500 },
+    { label: "Above ₹1500", min: 1500, max: Infinity },
+  ],
+  discounts: [
+    { label: "40% and above", min: 40 },
+    { label: "30% and above", min: 30 },
+    { label: "20% and above", min: 20 },
+    { label: "10% and above", min: 10 },
+  ],
+};

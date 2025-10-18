@@ -1,0 +1,74 @@
+.categorypanel button {
+  text-transform: capitalize !important   ;
+}
+/* Ensure proper dropdown behavior */
+nav {
+  position: relative !important;
+}
+
+.dropdown-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+/* Smooth transitions */
+nav ul li {
+  transition: all 0.3s ease;
+}
+
+/* Scrollbar styling for dropdown */
+.dropdown-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.dropdown-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.dropdown-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+/* Custom scrollbar for dropdown */
+.grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.grid::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.grid::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Horizontal scroll styling */
+.flex.overflow-x-auto::-webkit-scrollbar {
+  height: 6px;
+}
+
+.flex.overflow-x-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.flex.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
