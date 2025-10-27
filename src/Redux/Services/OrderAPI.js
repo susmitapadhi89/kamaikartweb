@@ -4,7 +4,7 @@ export const OrderService = {
   // Get all banners
   Orderpost: async (orderData) => {
     try {
-      const res = await API.post("/order/place", orderData, {
+      const res = await API.post("/web/orderplace", orderData, {
         withCredentials: true,
       });
       return res.data;
@@ -14,7 +14,7 @@ export const OrderService = {
   },
   OrderGet: async () => {
     try {
-      const res = await API.get("/order/history", {
+      const res = await API.get("/web/orderhistory", {
         withCredentials: true,
       });
       return res.data;
@@ -24,7 +24,7 @@ export const OrderService = {
   },
   OrderGetByID: async (orderid) => {
     try {
-      const res = await API.get(`/order/${orderid}`, {
+      const res = await API.get(`/web/order/${orderid}`, {
         withCredentials: true,
       });
       return res.data;
@@ -34,7 +34,7 @@ export const OrderService = {
   },
   CancleOrder: async (orderData) => {
     try {
-      const res = await API.post("/order/cancel", orderData, {
+      const res = await API.post("/web/ordercancel", orderData, {
         withCredentials: true,
       });
       return res.data;
@@ -45,7 +45,7 @@ export const OrderService = {
 
   CancleOrderReasondata: async () => {
     try {
-      const res = await API.get("/cancelReason/web", {
+      const res = await API.get("/web/cancelReason", {
         withCredentials: true,
       });
       return res.data;
@@ -57,7 +57,7 @@ export const OrderService = {
     try {
       console.log(orderData, "orderapi");
 
-      const res = await API.post("/order/place", orderData, {
+      const res = await API.post("/web/orderplace", orderData, {
         withCredentials: true,
       });
       return res.data;

@@ -4,7 +4,7 @@ export const OfferBannerService = {
   // Get all banners
   GetOfferBanner: async () => {
     try {
-      const res = await API.get("/offer/web", {
+      const res = await API.get("/web/offer", {
         withCredentials: true,
       });
       return res.data;

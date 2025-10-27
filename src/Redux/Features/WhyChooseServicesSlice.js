@@ -15,19 +15,6 @@ export const getAllWhyChoose = createAsyncThunk(
   }
 );
 
-export const CreateWhyChoose = createAsyncThunk(
-  "whyChoose/create",
-  async (data, { rejectWithValue, getState }) => {
-    try {
-      const token = getState().AuthOpration.token;
-      const res = WHyChooseService.AddWhyChoosedata(data, token);
-      return res;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || "Something went wrong");
-    }
-  }
-);
-
 const initialState = {
   WhyChooseData: [],
   loading: false,
@@ -54,19 +41,5 @@ export const WhychooseServices = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      //  add new item
-      .addCase(CreateWhyChoose.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(CreateWhyChoose.fulfilled, (state, action) => {
-        state.loading = false;
-        state.WhyChooseData.push(action.payload);
-      })
-      .addCase(CreateWhyChoose.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
   },
 });

@@ -4,7 +4,7 @@ export const ProductService = {
   GetAllProduct: async (page, limit, main, sub, child) => {
     try {
       const res = await API.post(
-        `/product/all-products`,
+        `/web/all-products`,
         {
           page: page,
           limit: limit,
@@ -24,7 +24,7 @@ export const ProductService = {
   },
   GetProductByID: async (id) => {
     try {
-      const res = await API.get(`/product/details/${id}`, {
+      const res = await API.get(`/web/details/${id}`, {
         withCredentials: true,
       });
 

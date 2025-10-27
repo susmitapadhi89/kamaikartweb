@@ -4,7 +4,7 @@ export const PaymentService = {
   // Get all banners
   PaymentList: async () => {
     try {
-      const res = await API.get("/paymentMethod/web", {
+      const res = await API.get("/web/paymentMethod", {
         withCredentials: true,
       });
       return res.data;

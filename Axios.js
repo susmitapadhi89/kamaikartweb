@@ -90,7 +90,7 @@ API.interceptors.response.use(
 
         try {
           const res = await API.post(
-            "/auth/refresh",
+            "/web/refresh",
             {},
             { withCredentials: true }
           );

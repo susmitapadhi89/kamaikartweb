@@ -4,7 +4,7 @@ export const WishlistService = {
   AddtoWishlist: async (product_id) => {
     try {
       const res = await API.post(
-        `/product/wishlistweb/`,
+        `/web/wishlist/`,
         { product_id },
         {
           withCredentials: true,
@@ -19,7 +19,7 @@ export const WishlistService = {
 
   GetAllWishlist: async () => {
     try {
-      const res = await API.get(`/product/wishlistweb`, {
+      const res = await API.get(`/web/wishlist`, {
         withCredentials: true,
       });
 
@@ -31,7 +31,7 @@ export const WishlistService = {
 
   DeleteWishlist: async (productid) => {
     try {
-      const res = await API.delete(`/product/wishlistweb/${productid}`, {
+      const res = await API.delete(`/web/wishlist/${productid}`, {
         withCredentials: true,
       });
 

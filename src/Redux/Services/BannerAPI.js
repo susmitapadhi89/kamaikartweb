@@ -3,7 +3,7 @@ import { API } from "../../../Axios";
 export const BannerService = {
   GetAllBanner: async () => {
     try {
-      const res = await API.get("/banner/web", {
+      const res = await API.get("/web/banner", {
         withCredentials: true,
       });
 

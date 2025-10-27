@@ -4,7 +4,7 @@ export const CartService = {
   ADDCart: async (product_id) => {
     try {
       const res = await API.post(
-        "/cart/add",
+        "web/cart",
         { product_id },
         {
           withCredentials: true,
@@ -19,7 +19,7 @@ export const CartService = {
 
   DeleteCart: async (product_index) => {
     try {
-      const res = await API.delete(`/cart/${product_index}`, {
+      const res = await API.delete(`/web/cart/${product_index}`, {
         withCredentials: true,
       });
 
@@ -31,7 +31,7 @@ export const CartService = {
 
   GetCart: async () => {
     try {
-      const res = await API.get("/cart", {
+      const res = await API.get("/web/cart", {
         withCredentials: true,
       });
 
@@ -44,7 +44,7 @@ export const CartService = {
   UpdateCartQuentity: async (product_id, quantity) => {
     try {
       const res = await API.put(
-        `/cart/${product_id}`,
+        `/web/cart/${product_id}`,
         { quantity },
         {
           withCredentials: true,

@@ -3,7 +3,7 @@ import { API } from "../../../Axios";
 export const AddressService = {
   ADDAddress: async (addressdata) => {
     try {
-      const res = await API.post("/user/web/address", addressdata, {
+      const res = await API.post("/web/address", addressdata, {
         withCredentials: true,
       });
 
@@ -16,7 +16,7 @@ export const AddressService = {
   UpdateAddress: async (address_id, addressdata) => {
     try {
       const res = await API.post(
-        `/user/web/address/${address_id}`,
+        `/web/address/${address_id}`,
         addressdata,
         {
           withCredentials: true,
@@ -31,7 +31,7 @@ export const AddressService = {
 
   GetAllAddress: async () => {
     try {
-      const res = await API.get("/user/web/address", {
+      const res = await API.get("/web/address", {
         withCredentials: true,
       });
 
@@ -43,7 +43,7 @@ export const AddressService = {
 
   GetSingleAddress: async (address_id) => {
     try {
-      const res = await API.get(`/user/web/address/${address_id}`, {
+      const res = await API.get(`/web/address/${address_id}`, {
         withCredentials: true,
       });
 
@@ -54,7 +54,7 @@ export const AddressService = {
   },
   DeleteAddress: async (address_id) => {
     try {
-      const res = await API.delete(`/user/web/address/${address_id}`, {
+      const res = await API.delete(`/web/address/${address_id}`, {
         withCredentials: true,
       });
 

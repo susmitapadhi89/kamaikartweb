@@ -5,7 +5,7 @@ export const AuthServices = {
 
   Login: async (data) => {
     try {
-      const res = await API.post("/auth/signin", data, {
+      const res = await API.post("/web/signin", data, {
         credentials: "include",
       });
       return res;
@@ -17,7 +17,7 @@ export const AuthServices = {
 
   LogOut: async () => {
     try {
-      const res = await API.post("/auth/logout", {
+      const res = await API.post("/web/logout", {
         withCredentials: true,
       });
       return res;
@@ -27,7 +27,7 @@ export const AuthServices = {
   },
   Register: async (data) => {
     try {
-      const res = await API.post("/auth/signup", data);
+      const res = await API.post("/web/signup", data);
       return res;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -36,7 +36,7 @@ export const AuthServices = {
 
   getUserProfile: async () => {
     try {
-      const res = await API.get("/auth/profile", {
+      const res = await API.get("/web/profile", {
         withCredentials: true,
       });
       return res;

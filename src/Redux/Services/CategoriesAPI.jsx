@@ -3,7 +3,7 @@ import { API } from "../../../Axios";
 export const CategoryService = {
   GetAllCategories: async () => {
     try {
-      const res = await API.get("/categories/megaMenu", {
+      const res = await API.get("/web/megaMenu", {
         withCredentials: true,
       });
 
