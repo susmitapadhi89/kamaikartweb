@@ -5,7 +5,10 @@ export const OrderPlace = createAsyncThunk(
   "Add/Order",
   async (orderData, { rejectWithValue }) => {
     try {
+      console.log("Order data before API:", orderData);
+
       const res = await OrderService.Orderpost(orderData);
+
       return res;
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);

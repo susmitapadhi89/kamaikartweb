@@ -48,7 +48,19 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  //const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = () => {
+    const trimmedQuery = searchQuery.trim();
+    if (trimmedQuery.length === 0) {
+      toast.error("Please enter a product name to search");
+      return;
+    }
+
+    // Navigate to Product Listing Page with search query
+    navigate(`/categories/?search=${encodeURIComponent(trimmedQuery)}`);
+    setSearchQuery(""); // Optional: Clear search input after navigation
+  };
 
   // const handleLogout = () => {
   //   localStorage.removeItem("token");
@@ -84,10 +96,18 @@ const Header = () => {
         <div className="hidden lg:flex flex-1 mx-4 lg:mx-8 max-w-2xl">
           <input
             type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSearch();
+            }}
             placeholder="Search product"
             className="w-full border border-gray-300 rounded-l-md px-4 py-2 focus:outline-none focus:border-[#C71F46]"
           />
-          <button className="bg-[#C71F46] text-white px-6 rounded-r-md hover:bg-[#A51A3A] transition-colors">
+          <button
+            onClick={handleSearch}
+            className="bg-[#C71F46] text-white px-6 rounded-r-md hover:bg-[#A51A3A] transition-colors"
+          >
             <FaSearch />
           </button>
         </div>

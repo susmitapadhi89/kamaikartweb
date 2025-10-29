@@ -3,9 +3,11 @@ import { CartService } from "../Services/CartAPI";
 
 export const AddTOCart = createAsyncThunk(
   "Add/Cart",
-  async (product_id, { rejectWithValue }) => {
+  async ({ product_id, variant_id }, { rejectWithValue }) => {
     try {
-      const res = await CartService.ADDCart(product_id);
+      console.log(variant_id);
+
+      const res = await CartService.ADDCart(product_id, variant_id);
       return res;
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);

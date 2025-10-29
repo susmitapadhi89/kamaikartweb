@@ -4,10 +4,19 @@ import { ProductService } from "../Services/ProductApi";
 export const GetAllProductdata = createAsyncThunk(
   "Product/Getall",
   async (
-    { page = 1, limit = 12, main = null, sub = null, child = null } = {},
+    {
+      page = 1,
+      limit = 12,
+      main = null,
+      sub = null,
+      child = null,
+      search = null,
+    } = {},
     { rejectWithValue }
   ) => {
-    console.log("hi");
+    console.log(page, limit, main, sub, child, search);
+
+    console.log(search);
 
     try {
       const res = await ProductService.GetAllProduct(
@@ -15,8 +24,11 @@ export const GetAllProductdata = createAsyncThunk(
         limit,
         main,
         sub,
-        child
+        child,
+        search
       );
+
+      console.log(res);
 
       return res.data;
     } catch (error) {
@@ -74,6 +86,7 @@ export const ProductServices = createSlice({
       })
       .addCase(GetAllProductdata.rejected, (state, action) => {
         state.loading = false;
+
         state.producterror = action.payload;
       })
       .addCase(GetProductdatabyId.pending, (state) => {

@@ -28,7 +28,9 @@ export const ProductListing = () => {
 
   useEffect(() => {
     dispatch(resetProducts());
+
     dispatch(GetAllProductdata());
+    console.log("hiii");
   }, [dispatch]);
 
   const [loading, setLoading] = useState(false);
@@ -177,6 +179,8 @@ export const ProductListing = () => {
       return newFilters;
     });
   }, []);
+
+  console.log(Products);
 
   // Load more products function
   const loadMoreProducts = useCallback(() => {

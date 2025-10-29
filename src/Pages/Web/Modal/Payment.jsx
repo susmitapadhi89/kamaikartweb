@@ -227,11 +227,11 @@ export default function PaymentPage() {
 
       const result = await dispatch(OrderPlace(orderData)).unwrap();
 
-      if (result.success) {
+      if (result.status === "success") {
         toast.success("Order placed successfully!");
         navigate("/order-confirmation", {
           state: {
-            orderData: result.order,
+            orderData: result,
           },
         });
       } else {
@@ -260,11 +260,11 @@ export default function PaymentPage() {
 
       const result = await dispatch(OrderPlace(orderData)).unwrap();
 
-      if (result.success) {
+      if (result.status === "success") {
         toast.success("Order placed successfully!");
         navigate("/order-confirmation", {
           state: {
-            orderData: result.order,
+            orderData: result,
           },
         });
       } else {

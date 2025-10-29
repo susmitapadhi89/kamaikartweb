@@ -45,9 +45,10 @@ function App() {
         { path: "lucky-draw", element: <LuckyDraw /> },
         {
           path: "categories",
+
           children: [
             {
-              path: ":main/:sub?/:child?",
+              path: ":main?/:sub?/:child?",
               index: true,
               element: <ProductListing />,
             },

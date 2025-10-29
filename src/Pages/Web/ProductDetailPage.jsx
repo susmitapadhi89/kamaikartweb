@@ -184,7 +184,12 @@ export const Product_Detail = () => {
     }
 
     try {
-      await dispatch(AddTOCart(product.id)).unwrap();
+      await dispatch(
+        AddTOCart({
+          product_id: product.id,
+          variant_id: selectedVariant?.id,
+        })
+      ).unwrap();
       toast.success("Item added to cart!");
     } catch (err) {
       toast.error(err || "Failed to add to cart");

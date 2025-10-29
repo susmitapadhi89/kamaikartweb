@@ -1,11 +1,11 @@
 import { API } from "../../../Axios";
 
 export const CartService = {
-  ADDCart: async (product_id) => {
+  ADDCart: async (product_id, variant_id) => {
     try {
       const res = await API.post(
         "web/cart",
-        { product_id },
+        { product_id, variant_id },
         {
           withCredentials: true,
         }

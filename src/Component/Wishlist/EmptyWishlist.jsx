@@ -16,7 +16,7 @@ export const EmptyWishlist = () => {
       </p>
       <div className="flex justify-center space-x-4">
         <button
-          onClick={() => (window.location.href = "/products")}
+          onClick={() => (window.location.href = "/home")}
           className="px-6 py-3 bg-gradient-to-r from-blue-600 to-orange-600 text-white rounded-lg hover:from-blue-700 hover:to-orange-700 transition-all transform hover:scale-105"
         >
           Start Shopping

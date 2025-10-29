@@ -40,6 +40,6 @@ export const WhychooseServices = createSlice({
       .addCase(getAllWhyChoose.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      })
+      });
   },
 });

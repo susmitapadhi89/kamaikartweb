@@ -239,7 +239,7 @@
 //   );
 // };
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { Filter } from "../../Component/ProductListing/Filter";
 import { filterOptions } from "../../data/mockData";
 import { FaFilter, FaTimes } from "react-icons/fa";
@@ -252,7 +252,10 @@ import {
 
 export const ProductListing = () => {
   const dispatch = useDispatch();
+
   const { main, sub, child } = useParams(); // URL params
+  const [searchParams] = useSearchParams(); // Search params get करें
+  const search = searchParams.get("search"); // URL से search  करें
   const { Products, productloadings, producterror, limit, page, total } =
     useSelector((state) => state.ProductOpration);
 
@@ -273,8 +276,8 @@ export const ProductListing = () => {
   // Reset products on mount and fetch initial data with URL params
   useEffect(() => {
     dispatch(resetProducts());
-    dispatch(GetAllProductdata({ page: 1, limit, main, sub, child }));
-  }, [dispatch, main, sub, child, limit]);
+    dispatch(GetAllProductdata({ page: 1, limit, main, sub, child, search }));
+  }, [dispatch, main, sub, child, limit, search]);
 
   const throttle = (func, limit) => {
     let inThrottle;
@@ -290,8 +293,18 @@ export const ProductListing = () => {
   // Load more products
   const loadMoreProducts = useCallback(() => {
     if (productloadings || !hasMore) return;
-    dispatch(GetAllProductdata({ page, limit, main, sub, child }));
-  }, [dispatch, productloadings, hasMore, page, limit, main, sub, child]);
+    dispatch(GetAllProductdata({ page, limit, main, sub, child, search }));
+  }, [
+    dispatch,
+    productloadings,
+    hasMore,
+    page,
+    limit,
+    main,
+    sub,
+    child,
+    search,
+  ]);
 
   // Infinite scroll
   useEffect(() => {
@@ -497,7 +510,11 @@ export const ProductListing = () => {
                   </p>
                 )}
               {currentProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                // <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={`${product.id}-${product.title}`}
+                  product={product}
+                />
               ))}
             </div>
 

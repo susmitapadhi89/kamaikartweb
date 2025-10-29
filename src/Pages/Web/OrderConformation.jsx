@@ -1,6 +1,5 @@
 // import React, { useEffect, useState } from "react";
-// import { useDispatch } from "react-redux";
-// import { Link, useNavigate, useLocation } from "react-router-dom";
+// import { useNavigate, useLocation } from "react-router-dom";
 // import {
 //   CheckCircle,
 //   Truck,
@@ -8,13 +7,16 @@
 //   CreditCard,
 //   MapPin,
 //   Package,
-//   ArrowLeft,
 //   Download,
 //   Share2,
 //   Home,
 //   ShoppingBag,
 //   Shield,
 //   Clock,
+//   Mail,
+//   Phone,
+//   MapPin as PinIcon,
+//   Store,
 // } from "lucide-react";
 // import toast from "react-hot-toast";
 // import jsPDF from "jspdf";
@@ -23,92 +25,150 @@
 // export default function OrderConfirmation() {
 //   const navigate = useNavigate();
 //   const location = useLocation();
-//   const dispatch = useDispatch();
 
-//   // Get order data from navigation state
-//   const orderData = location.state || {};
-//   const {
-//     orderId = `ORD${Date.now()}`,
-//     totalAmount = 0,
-//     paymentMethod = "online",
-//     address = {},
-//     items = [],
-//   } = orderData;
+//   // Get order data from navigation state (from API response)
+//   const orderDataFromAPI = location.state?.orderData;
+
+//   // Transform API data to match frontend format
+//   const transformOrderData = () => {
+//     if (!orderDataFromAPI) return null;
+
+//     // Handle both single order and orders array
+//     const primaryOrder = orderDataFromAPI[0];
+
+//     if (!primaryOrder) return null;
+
+//     return {
+//       orderId: primaryOrder.orderId?.toString() || `ORD${Date.now()}`,
+//       totalAmount: parseFloat(primaryOrder.totalAmount) || 0,
+//       subtotal: parseFloat(primaryOrder.subtotal) || 0,
+//       shipping: parseFloat(primaryOrder.shipping) || 0,
+//       tax: parseFloat(primaryOrder.tax) || 0,
+//       paymentMethod: primaryOrder.paymentMethod || "online",
+//       estimatedDelivery: primaryOrder.estimatedDelivery || "",
+//       address: primaryOrder.address || {},
+//       items: (primaryOrder.items || []).map((item) => ({
+//         id: item.id,
+//         name: item.name,
+//         image: item.image,
+//         quantity: item.quantity,
+//         sellingPrice: parseFloat(item.sellingPrice) || 0,
+//         size:
+//           item.variant?.attributes?.find(
+//             (attr) => attr.name?.toLowerCase() === "size"
+//           )?.value || "Standard",
+//         color:
+//           item.variant?.attributes?.find(
+//             (attr) =>
+//               attr.name?.toLowerCase() === "color" ||
+//               attr.name?.toLowerCase() === "colour"
+//           )?.value || "Default",
+//       })),
+//     };
+//   };
+
+//   const orderData = transformOrderData();
 
 //   // Local state
 //   const [estimatedDelivery, setEstimatedDelivery] = useState("");
 //   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
 
-//   // Calculate estimated delivery date (3-5 days from now)
+//   // Use API estimated delivery or calculate one
 //   useEffect(() => {
-//     const deliveryDate = new Date();
-//     deliveryDate.setDate(
-//       deliveryDate.getDate() + Math.floor(Math.random() * 3) + 3
-//     );
-//     setEstimatedDelivery(
-//       deliveryDate.toLocaleDateString("en-US", {
-//         weekday: "long",
-//         year: "numeric",
-//         month: "long",
-//         day: "numeric",
-//       })
-//     );
-//   }, []);
+//     if (orderData?.estimatedDelivery) {
+//       setEstimatedDelivery(
+//         new Date(orderData.estimatedDelivery).toLocaleDateString("en-US", {
+//           weekday: "long",
+//           year: "numeric",
+//           month: "long",
+//           day: "numeric",
+//         })
+//       );
+//     } else {
+//       const deliveryDate = new Date();
+//       deliveryDate.setDate(
+//         deliveryDate.getDate() + Math.floor(Math.random() * 3) + 3
+//       );
+//       setEstimatedDelivery(
+//         deliveryDate.toLocaleDateString("en-US", {
+//           weekday: "long",
+//           year: "numeric",
+//           month: "long",
+//           day: "numeric",
+//         })
+//       );
+//     }
 
-//   // Calculate order summary
-//   const subtotal = items.reduce(
-//     (sum, item) => sum + item.sellingPrice * item.quantity,
-//     0
-//   );
-//   const shipping = subtotal > 50 ? 0 : 9.99;
-//   const tax = subtotal * 0.08;
-//   const total = subtotal + shipping + tax;
+//     //
+//   }, [orderData]);
+
+//   // Calculate order summary from API data
+//   const subtotal = orderData?.subtotal || 0;
+//   const shipping = orderData?.shipping || 0;
+//   const tax = orderData?.tax || 0;
+//   const total = orderData?.totalAmount || 0;
+
 //   const handleDownloadInvoice = async () => {
+//     if (!orderData) return;
+
 //     setIsGeneratingInvoice(true);
 //     toast.loading("Generating invoice...", { id: "invoice" });
 
 //     try {
-//       // Create PDF instance
 //       const doc = new jsPDF();
 
-//       // --- Header ---
+//       // Header with styling
+//       doc.setFillColor(59, 130, 246);
+//       doc.rect(0, 0, 220, 40, "F");
+
 //       doc.setFontSize(20);
-//       doc.setTextColor(40, 40, 40);
+//       doc.setTextColor(255, 255, 255);
 //       doc.text("KamaiCart", 105, 20, { align: "center" });
 
 //       doc.setFontSize(10);
-//       doc.setTextColor(100, 100, 100);
+//       doc.setTextColor(255, 255, 255);
 //       doc.text("INVOICE", 105, 30, { align: "center" });
 
-//       // --- Order Info ---
+//       // Order Info
 //       doc.setFontSize(8);
 //       doc.setTextColor(150, 150, 150);
-//       doc.text("Order Details", 14, 45);
+//       doc.text("Order Details", 14, 55);
 
 //       doc.setFontSize(10);
 //       doc.setTextColor(40, 40, 40);
-//       doc.text(`Order ID: ${orderId}`, 14, 52);
-//       doc.text(`Order Date: ${new Date().toLocaleDateString()}`, 14, 58);
-//       doc.text(`Estimated Delivery: ${estimatedDelivery}`, 14, 64);
+//       doc.text(`Order ID: ${orderData.orderId}`, 14, 62);
+//       doc.text(`Order Date: ${new Date().toLocaleDateString()}`, 14, 68);
+//       doc.text(`Estimated Delivery: ${estimatedDelivery}`, 14, 74);
 
-//       // --- Shipping Info ---
-//       doc.setFontSize(8);
-//       doc.setTextColor(150, 150, 150);
-//       doc.text("Shipping Address", 14, 75);
+//       // Shipping Info
+//       if (orderData.address) {
+//         doc.setFontSize(8);
+//         doc.setTextColor(150, 150, 150);
+//         doc.text("Shipping Address", 14, 85);
 
-//       doc.setFontSize(10);
-//       doc.setTextColor(40, 40, 40);
-//       doc.text(address.name || "Customer", 14, 82);
-//       doc.text(`${address.flat || ""}, ${address.area || ""}`, 14, 88);
-//       doc.text(address.address1 || "", 14, 94);
-//       if (address.address2) doc.text(address.address2, 14, 100);
-//       doc.text(`Postal Code: ${address.postal_code || ""}`, 14, 106);
-//       doc.text(`Phone: ${address.phone_number || ""}`, 14, 112);
+//         doc.setFontSize(10);
+//         doc.setTextColor(40, 40, 40);
+//         doc.text(orderData.address.name || "Customer", 14, 92);
+//         doc.text(
+//           `${orderData.address.flat || ""}, ${orderData.address.area || ""}`,
+//           14,
+//           98
+//         );
+//         doc.text(orderData.address.address1 || "", 14, 104);
+//         if (orderData.address.address2)
+//           doc.text(orderData.address.address2, 14, 110);
+//         doc.text(
+//           `Postal Code: ${orderData.address.postal_code || ""}`,
+//           14,
+//           116
+//         );
+//         doc.text(`Phone: ${orderData.address.phone_number || ""}`, 14, 122);
+//       }
 
-//       // --- Table Data ---
-//       const tableData = items.map((item, index) => [
+//       // Table Data
+//       const tableData = orderData.items.map((item, index) => [
 //         index + 1,
-//         item.name.substring(0, 30),
+//         item.name.substring(0, 30) + (item.name.length > 30 ? "..." : ""),
 //         item.size,
 //         item.color,
 //         item.quantity,
@@ -116,9 +176,8 @@
 //         `₹${(item.sellingPrice * item.quantity).toLocaleString()}`,
 //       ]);
 
-//       // ✅ Use the correct plugin syntax:
 //       autoTable(doc, {
-//         startY: 120,
+//         startY: orderData.address ? 130 : 85,
 //         head: [["#", "Product", "Size", "Color", "Qty", "Price", "Total"]],
 //         body: tableData,
 //         theme: "grid",
@@ -142,9 +201,9 @@
 //         },
 //       });
 
-//       // --- Summary ---
 //       const finalY = doc.lastAutoTable.finalY + 10;
 
+//       // Summary
 //       doc.setFontSize(10);
 //       doc.setTextColor(40, 40, 40);
 //       doc.text("Order Summary:", 14, finalY + 5);
@@ -165,16 +224,16 @@
 //         align: "right",
 //       });
 
-//       // --- Payment Method ---
+//       // Payment Method
 //       doc.setFontSize(10);
 //       doc.setFont(undefined, "normal");
 //       doc.text(
-//         `Payment Method: ${getPaymentMethodText(paymentMethod)}`,
+//         `Payment Method: ${getPaymentMethodText(orderData.paymentMethod)}`,
 //         14,
 //         finalY + 35
 //       );
 
-//       // --- Footer ---
+//       // Footer
 //       doc.setFontSize(8);
 //       doc.setTextColor(150, 150, 150);
 //       doc.text("Thank you for your purchase!", 105, finalY + 50, {
@@ -189,9 +248,10 @@
 //         }
 //       );
 
-//       // ✅ Save PDF
-//       doc.save(`invoice-${orderId}.pdf`);
-//       toast.success("Invoice downloaded successfully!", { id: "invoice" });
+//       doc.save(`kamaicart-${orderData.orderId}.pdf`);
+//       toast.success("OrderDetail downloaded successfully!", {
+//         id: "kamaicart",
+//       });
 //     } catch (error) {
 //       console.error("Error generating invoice:", error);
 //       toast.error("Failed to generate invoice. Please try again.", {
@@ -201,192 +261,250 @@
 //       setIsGeneratingInvoice(false);
 //     }
 //   };
+
 //   const getPaymentMethodText = (method) => {
-//     switch (method) {
-//       case "cod":
-//         return "Cash on Delivery";
-//       case "upi":
-//         return "UPI Payment";
-//       case "card":
-//         return "Credit/Debit Card";
-//       default:
-//         return "Online Payment";
-//     }
+//     if (!method) return "Unknown Payment Method";
+
+//     const methodName =
+//       typeof method === "object"
+//         ? method.name || method.payment_name || method.method || ""
+//         : method;
+
+//     if (typeof methodName !== "string") return "Unknown Payment Method";
+
+//     const name = methodName.toLowerCase();
+
+//     if (name.includes("cash") || name.includes("cod"))
+//       return "Cash on Delivery";
+//     if (name.includes("razorpay") || name.includes("card"))
+//       return "Paid Online via Razorpay";
+//     return "Payment Successful";
 //   };
 
 //   const handleShareOrder = () => {
+//     if (!orderData) return;
+
+//     const shareData = {
+//       title: `Order ${orderData.orderId} - KamaiCart`,
+//       text: `I just placed an order on KamaiCart! Order ID: ${orderData.orderId}, Total: ₹${total}`,
+//     };
+
 //     if (navigator.share) {
-//       navigator.share({
-//         title: `Order ${orderId}`,
-//         text: `I just placed an order on YourStore! Order ID: ${orderId}`,
-//       });
+//       navigator.share(shareData);
 //     } else {
-//       navigator.clipboard.writeText(`Order ID: ${orderId}`);
+//       navigator.clipboard.writeText(
+//         `Order ID: ${orderData.orderId}\nTotal: ₹${total}\nEstimated Delivery: ${estimatedDelivery}`
+//       );
 //       toast.success("Order details copied to clipboard");
 //     }
 //   };
 
-//   const handleTrackOrder = () => {
-//     navigate("/track-order", { state: { orderId } });
-//     toast.success("Redirecting to order tracking");
+//   const handleContinueShopping = () => {
+//     navigate("/products");
 //   };
 
-//   const handleContinueShopping = () => {
-//     navigate("/");
+//   const handleContactSupport = () => {
+//     window.location.href = "mailto:support@kamaicart.com";
 //   };
 
 //   // If no order data, redirect to home
-//   if (!location.state) {
+//   if (!orderData) {
 //     navigate("/");
 //     return null;
 //   }
 
 //   return (
-//     <div className="min-h-screen bg-gray-50">
-//       <div className="container mx-auto px-4 py-8">
-//         {/* Header */}
-//         <div className="text-center mb-8">
-//           <div className="flex justify-center mb-4">
-//             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-//               <CheckCircle className="text-green-600" size={40} />
+//     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+//       {/* Animated Background */}
+//       <div className="absolute inset-0 overflow-hidden">
+//         <div className="absolute -top-40 -right-32 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+//         <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+//         <div className="absolute top-40 left-1/2 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+//       </div>
+
+//       <div className="container mx-auto px-4 py-8 relative z-10">
+//         {/* Header Section */}
+//         <div className="text-center mb-12">
+//           <div className="flex justify-center mb-6">
+//             <div className="relative">
+//               <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center shadow-lg">
+//                 <CheckCircle className="text-green-600" size={48} />
+//               </div>
+//               <div className="absolute -top-2 -right-2">
+//                 <div className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-bounce">
+//                   ✓
+//                 </div>
+//               </div>
 //             </div>
 //           </div>
-//           <h1 className="text-3xl font-bold text-gray-900 mb-2">
+
+//           <h1 className="text-4xl font-bold text-gray-900 mb-3 bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
 //             Order Confirmed!
 //           </h1>
-//           <p className="text-lg text-gray-600 mb-4">
-//             Thank you for your purchase. Your order has been confirmed.
+//           <p className="text-xl text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed">
+//             Thank you for your purchase! Your order has been confirmed and is
+//             being processed.
 //           </p>
-//           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 inline-block">
-//             <p className="text-blue-800 font-medium">
-//               Order ID: <span className="font-bold">{orderId}</span>
-//             </p>
+
+//           <div className="bg-white/80 backdrop-blur-sm border border-blue-200 rounded-2xl p-6 inline-block shadow-lg">
+//             <div className="flex items-center gap-4">
+//               <div className="bg-blue-100 p-3 rounded-xl">
+//                 <Package className="text-blue-600" size={24} />
+//               </div>
+//               <div className="text-left">
+//                 <p className="text-blue-800 font-semibold text-sm">ORDER ID</p>
+//                 <p className="text-blue-900 font-bold text-xl">
+//                   {orderData.orderId}
+//                 </p>
+//               </div>
+//             </div>
 //           </div>
 //         </div>
 
-//         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+//         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 max-w-7xl mx-auto">
 //           {/* Left Column - Order Details */}
-//           <div className="lg:col-span-2 space-y-6">
-//             {/* Delivery Information */}
-//             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-//               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-//                 <Truck className="text-green-600" size={20} />
-//                 Delivery Information
+//           <div className="xl:col-span-2 space-y-8">
+//             {/* Delivery Timeline */}
+//             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-8">
+//               <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+//                 <div className="bg-green-100 p-2 rounded-lg">
+//                   <Truck className="text-green-600" size={24} />
+//                 </div>
+//                 Delivery Timeline
 //               </h2>
 
-//               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//                 {/* Estimated Delivery */}
-//                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-//                   <div className="flex items-center gap-3 mb-2">
-//                     <Calendar className="text-green-600" size={20} />
-//                     <h3 className="font-semibold text-green-900">
-//                       Estimated Delivery
-//                     </h3>
+//               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+//                 {/* Delivery Date */}
+//                 <div className="bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-2xl p-6">
+//                   <div className="flex items-center gap-4 mb-4">
+//                     <div className="bg-green-100 p-3 rounded-xl">
+//                       <Calendar className="text-green-600" size={24} />
+//                     </div>
+//                     <div>
+//                       <h3 className="font-bold text-green-900 text-lg">
+//                         Estimated Delivery
+//                       </h3>
+//                       <p className="text-green-800 font-semibold text-xl">
+//                         {estimatedDelivery}
+//                       </p>
+//                     </div>
 //                   </div>
-//                   <p className="text-green-800 font-medium">
-//                     {estimatedDelivery}
-//                   </p>
-//                   <p className="text-green-700 text-sm mt-1">
-//                     3-5 business days
+//                   <p className="text-green-700 text-sm">
+//                     Standard delivery • 3-5 business days
 //                   </p>
 //                 </div>
 
 //                 {/* Shipping Address */}
-//                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-//                   <div className="flex items-center gap-3 mb-2">
-//                     <MapPin className="text-blue-600" size={20} />
-//                     <h3 className="font-semibold text-blue-900">
-//                       Shipping Address
-//                     </h3>
+//                 {orderData.address && (
+//                   <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-2xl p-6">
+//                     <div className="flex items-center gap-4 mb-4">
+//                       <div className="bg-blue-100 p-3 rounded-xl">
+//                         <MapPin className="text-blue-600" size={24} />
+//                       </div>
+//                       <div>
+//                         <h3 className="font-bold text-blue-900 text-lg">
+//                           Shipping Address
+//                         </h3>
+//                       </div>
+//                     </div>
+//                     <div className="space-y-2 text-blue-800">
+//                       <div className="flex items-center gap-2">
+//                         <PinIcon size={16} className="text-blue-600" />
+//                         <p className="font-semibold">
+//                           {orderData.address.name}
+//                         </p>
+//                       </div>
+//                       <p className="text-sm ml-6">
+//                         {orderData.address.flat}, {orderData.address.area}
+//                       </p>
+//                       <p className="text-sm ml-6">
+//                         {orderData.address.address1}
+//                       </p>
+//                       {orderData.address.address2 && (
+//                         <p className="text-sm ml-6">
+//                           {orderData.address.address2}
+//                         </p>
+//                       )}
+//                       <div className="flex items-center gap-4 mt-3 pt-3 border-t border-blue-200">
+//                         <div className="flex items-center gap-2">
+//                           <Mail size={14} className="text-blue-600" />
+//                           <span className="text-xs">
+//                             Postal: {orderData.address.postal_code}
+//                           </span>
+//                         </div>
+//                         <div className="flex items-center gap-2">
+//                           <Phone size={14} className="text-blue-600" />
+//                           <span className="text-xs">
+//                             {orderData.address.phone_number}
+//                           </span>
+//                         </div>
+//                       </div>
+//                     </div>
 //                   </div>
-//                   <div className="text-blue-800">
-//                     <p className="font-medium">{address.name}</p>
-//                     <p className="text-sm">
-//                       {address.flat}, {address.area}
-//                     </p>
-//                     <p className="text-sm">{address.address1}</p>
-//                     {address.address2 && (
-//                       <p className="text-sm">{address.address2}</p>
-//                     )}
-//                     <p className="text-sm">
-//                       Postal Code: {address.postal_code}
-//                     </p>
-//                     <p className="text-sm font-medium mt-1">
-//                       Phone: {address.phone_number}
-//                     </p>
-//                   </div>
-//                 </div>
+//                 )}
 //               </div>
 
-//               {/* Order Status Timeline */}
-//               <div className="mt-6">
-//                 <h3 className="font-semibold text-gray-900 mb-4">
-//                   Order Status
-//                 </h3>
-//                 <div className="space-y-4">
-//                   <div className="flex items-center gap-3">
-//                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-//                     <span className="text-green-600 font-medium">
-//                       Order Confirmed
-//                     </span>
-//                   </div>
-//                   <div className="flex items-center gap-3">
-//                     <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-//                     <span className="text-gray-500">Processing</span>
-//                   </div>
-//                   <div className="flex items-center gap-3">
-//                     <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-//                     <span className="text-gray-500">Shipped</span>
-//                   </div>
-//                   <div className="flex items-center gap-3">
-//                     <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-//                     <span className="text-gray-500">Out for Delivery</span>
-//                   </div>
-//                   <div className="flex items-center gap-3">
-//                     <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-//                     <span className="text-gray-500">Delivered</span>
-//                   </div>
-//                 </div>
-//               </div>
+//               {/* Order Status Steps */}
 //             </div>
 
 //             {/* Order Items */}
-//             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-//               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-//                 <Package className="text-blue-600" size={20} />
-//                 Order Items
+//             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-8">
+//               <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+//                 <div className="bg-blue-100 p-2 rounded-lg">
+//                   <Package className="text-blue-600" size={24} />
+//                 </div>
+//                 Order Items ({orderData.items.length})
 //               </h2>
 
 //               <div className="space-y-4">
-//                 {items.map((item) => (
+//                 {orderData.items.map((item, index) => (
 //                   <div
-//                     key={item.id}
-//                     className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg"
+//                     key={`${item.id}-${index}`}
+//                     className="flex items-center gap-6 p-6 border border-gray-200 rounded-2xl hover:shadow-md transition-all duration-300 bg-white"
 //                   >
-//                     <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
-//                       <img
-//                         src={item.image}
-//                         alt={item.name}
-//                         className="w-full h-full object-cover"
-//                       />
+//                     <div className="relative">
+//                       <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden shadow-sm">
+//                         {item.image ? (
+//                           <img
+//                             src={item.image}
+//                             alt={item.name}
+//                             className="w-full h-full object-cover"
+//                             onError={(e) => {
+//                               e.target.style.display = "none";
+//                               e.target.nextSibling.style.display = "flex";
+//                             }}
+//                           />
+//                         ) : null}
+//                         <div
+//                           className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-500 ${
+//                             item.image ? "hidden" : "flex"
+//                           }`}
+//                         >
+//                           <Package size={24} />
+//                         </div>
+//                       </div>
 //                     </div>
-//                     <div className="flex-1">
-//                       <h3 className="font-semibold text-gray-900">
+
+//                     <div className="flex-1 min-w-0">
+//                       <h3 className="font-bold text-gray-900 text-lg mb-2 truncate">
 //                         {item.name}
 //                       </h3>
-//                       <p className="text-gray-600 text-sm">
-//                         Quantity: {item.quantity}
-//                       </p>
-//                       <p className="text-gray-600 text-sm">
-//                         Size: {item.size} | Color: {item.color}
-//                       </p>
+//                       <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+//                         <span className="bg-gray-100 px-3 py-1 rounded-full">
+//                           Size: {item.size}
+//                         </span>
+//                         <span className="bg-gray-100 px-3 py-1 rounded-full">
+//                           Color: {item.color}
+//                         </span>
+//                         <span className="bg-gray-100 px-3 py-1 rounded-full">
+//                           Qty: {item.quantity}
+//                         </span>
+//                       </div>
 //                     </div>
+
 //                     <div className="text-right">
-//                       <p className="font-semibold text-gray-900">
+//                       <p className="font-bold text-gray-900 text-lg">
 //                         ₹{(item.sellingPrice * item.quantity).toLocaleString()}
-//                       </p>
-//                       <p className="text-gray-600 text-sm line-through">
-//                         ₹{(item.originalPrice * item.quantity).toLocaleString()}
 //                       </p>
 //                     </div>
 //                   </div>
@@ -395,34 +513,71 @@
 //             </div>
 
 //             {/* Payment Information */}
-//             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-//               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-//                 <CreditCard className="text-purple-600" size={20} />
+//             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-8">
+//               <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+//                 <div className="bg-purple-100 p-2 rounded-lg">
+//                   <CreditCard className="text-purple-600" size={24} />
+//                 </div>
 //                 Payment Information
 //               </h2>
 
-//               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//                 <div>
-//                   <h3 className="font-semibold text-gray-900 mb-2">
-//                     Payment Method
+//               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+//                 <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-6">
+//                   <h3 className="font-bold text-gray-900 mb-4 text-lg">
+//                     Payment Details
 //                   </h3>
-//                   <div className="flex items-center gap-3">
-//                     <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-//                       <CreditCard className="text-purple-600" size={20} />
+//                   <div className="flex items-center gap-4">
+//                     <div className="bg-white p-3 rounded-xl shadow-sm">
+//                       <CreditCard className="text-purple-600" size={24} />
 //                     </div>
 //                     <div>
-//                       <p className="font-medium text-gray-900">
-//                         {paymentMethod === "cod"
-//                           ? "Cash on Delivery"
-//                           : paymentMethod === "upi"
-//                           ? "UPI Payment"
-//                           : "Credit/Debit Card"}
+//                       <p className="font-semibold text-gray-900 text-lg">
+//                         {getPaymentMethodText(orderData.paymentMethod)}
 //                       </p>
-//                       <p className="text-gray-600 text-sm">
-//                         {paymentMethod === "cod"
-//                           ? "Pay when you receive"
-//                           : "Paid successfully"}
+//                       <p className="text-gray-600">
+//                         {(() => {
+//                           const method = orderData.paymentMethod;
+//                           const methodName =
+//                             typeof method === "object" ? method.name : method;
+//                           return methodName?.toLowerCase().includes("cash")
+//                             ? "Pay when you receive"
+//                             : "Paid successfully";
+//                         })()}
 //                       </p>
+//                     </div>
+//                   </div>
+//                 </div>
+
+//                 <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-2xl p-6">
+//                   <h3 className="font-bold text-gray-900 mb-4 text-lg">
+//                     Order Summary
+//                   </h3>
+//                   <div className="space-y-3">
+//                     <div className="flex justify-between text-gray-600">
+//                       <span>Items ({orderData.items.length})</span>
+//                       <span>₹{subtotal.toLocaleString()}</span>
+//                     </div>
+//                     <div className="flex justify-between text-gray-600">
+//                       <span>Shipping</span>
+//                       <span
+//                         className={
+//                           shipping === 0 ? "text-green-600 font-semibold" : ""
+//                         }
+//                       >
+//                         {shipping === 0 ? "FREE" : `₹${shipping}`}
+//                       </span>
+//                     </div>
+//                     <div className="flex justify-between text-gray-600">
+//                       <span>Tax</span>
+//                       <span>₹{tax.toFixed(2)}</span>
+//                     </div>
+//                     <div className="border-t border-gray-200 pt-3">
+//                       <div className="flex justify-between text-lg font-bold text-gray-900">
+//                         <span>Total Amount</span>
+//                         <span className="text-blue-600">
+//                           ₹{total.toFixed(2)}
+//                         </span>
+//                       </div>
 //                     </div>
 //                   </div>
 //                 </div>
@@ -430,132 +585,148 @@
 //             </div>
 //           </div>
 
-//           {/* Right Column - Order Summary & Actions */}
-//           <div className="lg:col-span-1">
-//             <div className="sticky top-24 space-y-6">
-//               {/* Order Summary */}
-//               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-//                 <h2 className="text-xl font-bold text-gray-900 mb-4">
-//                   Order Summary
+//           {/* Right Column - Quick Actions & Support */}
+//           <div className="xl:col-span-1">
+//             <div className="sticky top-8 space-y-8">
+//               {/* Quick Actions */}
+//               <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-8">
+//                 <h2 className="text-2xl font-bold text-gray-900 mb-6">
+//                   Quick Actions
 //                 </h2>
 
-//                 <div className="space-y-3 mb-6">
-//                   <div className="flex justify-between text-gray-600">
-//                     <span>Subtotal</span>
-//                     <span>₹{subtotal.toLocaleString()}</span>
-//                   </div>
-//                   <div className="flex justify-between text-gray-600">
-//                     <span>Shipping</span>
-//                     <span className={shipping === 0 ? "text-green-600" : ""}>
-//                       {shipping === 0 ? "FREE" : `₹${shipping}`}
-//                     </span>
-//                   </div>
-//                   <div className="flex justify-between text-gray-600">
-//                     <span>Tax</span>
-//                     <span>₹{tax.toFixed(2)}</span>
-//                   </div>
-//                 </div>
-
-//                 <div className="border-t border-gray-200 pt-4 mb-6">
-//                   <div className="flex justify-between text-lg font-bold text-gray-900">
-//                     <span>Total</span>
-//                     <span>₹{total.toFixed(2)}</span>
-//                   </div>
-//                 </div>
-
-//                 {/* Action Buttons */}
-//                 <div className="space-y-3">
-//                   <button
-//                     onClick={handleTrackOrder}
-//                     className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-//                   >
-//                     <Truck size={20} />
-//                     Track Your Order
-//                   </button>
-
+//                 <div className="space-y-4">
 //                   <button
 //                     onClick={handleDownloadInvoice}
 //                     disabled={isGeneratingInvoice}
-//                     className="w-full border border-gray-300 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+//                     className="w-full bg-white border-2 border-gray-300 text-gray-700 py-4 rounded-2xl font-bold hover:bg-gray-50 hover:border-blue-500 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
 //                   >
-//                     <Download size={20} />
-//                     {isGeneratingInvoice ? "Generating..." : "Download Invoice"}
+//                     <Download size={24} />
+//                     {isGeneratingInvoice
+//                       ? "Generating Invoice..."
+//                       : "Download Invoice"}
 //                   </button>
 
 //                   <button
 //                     onClick={handleShareOrder}
-//                     className="w-full border border-gray-300 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+//                     className="w-full bg-white border-2 border-gray-300 text-gray-700 py-4 rounded-2xl font-bold hover:bg-gray-50 hover:border-green-500 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-center gap-3"
 //                   >
-//                     <Share2 size={20} />
-//                     Share Order
+//                     <Share2 size={24} />
+//                     Share Order Details
 //                   </button>
 //                 </div>
 //               </div>
 
 //               {/* Support & Next Steps */}
-//               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-//                 <h3 className="font-semibold text-gray-900 mb-4">
+//               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-lg border border-blue-200 p-8">
+//                 <h3 className="font-bold text-gray-900 mb-6 text-xl">
 //                   What's Next?
 //                 </h3>
-//                 <div className="space-y-4">
-//                   <div className="flex items-start gap-3">
-//                     <Clock className="text-blue-600 mt-1" size={16} />
+//                 <div className="space-y-6">
+//                   <div className="flex items-start gap-4">
+//                     <div className="bg-blue-100 p-3 rounded-xl flex-shrink-0">
+//                       <Clock className="text-blue-600" size={20} />
+//                     </div>
 //                     <div>
-//                       <p className="font-medium text-gray-900">
+//                       <p className="font-semibold text-gray-900">
 //                         Order Processing
 //                       </p>
-//                       <p className="text-gray-600 text-sm">
-//                         We'll start preparing your order within 24 hours
+//                       <p className="text-gray-600 text-sm mt-1">
+//                         We'll start preparing your order within the next few
+//                         hours
 //                       </p>
 //                     </div>
 //                   </div>
-//                   <div className="flex items-start gap-3">
-//                     <Truck className="text-green-600 mt-1" size={16} />
+
+//                   <div className="flex items-start gap-4">
+//                     <div className="bg-green-100 p-3 rounded-xl flex-shrink-0">
+//                       <Truck className="text-green-600" size={20} />
+//                     </div>
 //                     <div>
-//                       <p className="font-medium text-gray-900">
+//                       <p className="font-semibold text-gray-900">
 //                         Shipping Updates
 //                       </p>
-//                       <p className="text-gray-600 text-sm">
-//                         You'll receive tracking information via email
+//                       <p className="text-gray-600 text-sm mt-1">
+//                         Track your order with real-time updates via email & SMS
 //                       </p>
 //                     </div>
 //                   </div>
-//                   <div className="flex items-start gap-3">
-//                     <Shield className="text-purple-600 mt-1" size={16} />
+
+//                   <div className="flex items-start gap-4">
+//                     <div className="bg-purple-100 p-3 rounded-xl flex-shrink-0">
+//                       <Shield className="text-purple-600" size={20} />
+//                     </div>
 //                     <div>
-//                       <p className="font-medium text-gray-900">Need Help?</p>
-//                       <p className="text-gray-600 text-sm">
-//                         Contact support for any questions about your order
+//                       <p className="font-semibold text-gray-900">Need Help?</p>
+//                       <p className="text-gray-600 text-sm mt-1">
+//                         Our support team is here to help with any questions
 //                       </p>
 //                     </div>
 //                   </div>
 //                 </div>
+
+//                 <button
+//                   onClick={handleContactSupport}
+//                   className="w-full mt-6 bg-white border-2 border-blue-200 text-blue-600 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-300 flex items-center justify-center gap-2"
+//                 >
+//                   <Mail size={18} />
+//                   Contact Support
+//                 </button>
 //               </div>
 
 //               {/* Continue Shopping */}
-//               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-//                 <div className="text-center">
-//                   <p className="text-gray-600 mb-4">Want to explore more?</p>
+//               <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl shadow-lg border border-green-200 p-8 text-center">
+//                 <div className="bg-green-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+//                   <ShoppingBag className="text-green-600" size={28} />
+//                 </div>
+
+//                 <h3 className="font-bold text-gray-900 mb-3 text-lg">
+//                   Explore More
+//                 </h3>
+//                 <p className="text-gray-600 mb-6 text-sm">
+//                   Discover more amazing products and deals
+//                 </p>
+
+//                 <div className="space-y-3">
 //                   <button
 //                     onClick={handleContinueShopping}
-//                     className="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+//                     className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 rounded-2xl font-bold hover:from-green-700 hover:to-emerald-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
 //                   >
 //                     <ShoppingBag size={20} />
 //                     Continue Shopping
 //                   </button>
-//                   <Link
-//                     to="/"
-//                     className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mt-3"
-//                   >
-//                     <Home size={16} />
-//                     Back to Home
-//                   </Link>
 //                 </div>
 //               </div>
 //             </div>
 //           </div>
 //         </div>
 //       </div>
+
+//       {/* Add custom animations */}
+//       <style jsx>{`
+//         @keyframes blob {
+//           0% {
+//             transform: translate(0px, 0px) scale(1);
+//           }
+//           33% {
+//             transform: translate(30px, -50px) scale(1.1);
+//           }
+//           66% {
+//             transform: translate(-20px, 20px) scale(0.9);
+//           }
+//           100% {
+//             transform: translate(0px, 0px) scale(1);
+//           }
+//         }
+//         .animate-blob {
+//           animation: blob 7s infinite;
+//         }
+//         .animation-delay-2000 {
+//           animation-delay: 2s;
+//         }
+//         .animation-delay-4000 {
+//           animation-delay: 4s;
+//         }
+//       `}</style>
 //     </div>
 //   );
 // }
@@ -570,14 +741,30 @@ import {
   Package,
   Download,
   Share2,
-  Home,
   ShoppingBag,
   Shield,
   Clock,
+  Mail,
+  Phone,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+
+// Custom PinIcon component
+const PinIcon = ({ size = 16, className = "" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    className={className}
+  >
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);
 
 export default function OrderConfirmation() {
   const navigate = useNavigate();
@@ -587,47 +774,108 @@ export default function OrderConfirmation() {
   const orderDataFromAPI = location.state?.orderData;
 
   // Transform API data to match frontend format
-  const transformOrderData = (apiData) => {
-    if (!apiData) return null;
+  const transformOrderData = () => {
+    if (!orderDataFromAPI) return null;
+
+    // Handle the actual API response structure with data.orders
+    if (orderDataFromAPI.data && orderDataFromAPI.data.orders) {
+      const {
+        orders,
+        address,
+        paymentMethod,
+        subtotal,
+        tax,
+        shipping,
+        totalAmount,
+      } = orderDataFromAPI.data;
+
+      if (!orders || orders.length === 0) return null;
+
+      const primaryOrder = orders[0];
+
+      return {
+        orderId: primaryOrder.orderId?.toString() || `ORD${Date.now()}`,
+        totalAmount: parseFloat(totalAmount) || 0,
+        subtotal: parseFloat(subtotal) || 0,
+        shipping: parseFloat(shipping) || 0,
+        tax: parseFloat(tax) || 0,
+        paymentMethod: paymentMethod || { name: "Cash on Delivery" },
+        estimatedDelivery: primaryOrder.estimatedDelivery || "",
+        address: address || {},
+        items: orders.flatMap((order) =>
+          (order.items || []).map((item) => ({
+            id: item.id,
+            name: item.name,
+            image: item.image,
+            quantity: item.quantity,
+            sellingPrice: parseFloat(item.sellingPrice) || 0,
+            size: "Standard",
+            color: "Default",
+          }))
+        ),
+        // Store all orders for grouped display
+        allOrders: orders,
+      };
+    }
+
+    // Handle legacy format (single order)
+    const primaryOrder = orderDataFromAPI[0];
+    if (!primaryOrder) return null;
 
     return {
-      orderId: apiData.orderId?.toString() || `ORD${Date.now()}`,
-      totalAmount: parseFloat(apiData.totalAmount) || 0,
-      subtotal: parseFloat(apiData.subtotal) || 0,
-      shipping: parseFloat(apiData.shipping) || 0,
-      tax: parseFloat(apiData.tax) || 0,
-      paymentMethod: apiData.paymentMethod || "online",
-      estimatedDelivery: apiData.estimatedDelivery || "",
-      address: apiData.address || {},
-      items: (apiData.items || []).map((item) => ({
+      orderId: primaryOrder.orderId?.toString() || `ORD${Date.now()}`,
+      totalAmount: parseFloat(primaryOrder.totalAmount) || 0,
+      subtotal: parseFloat(primaryOrder.subtotal) || 0,
+      shipping: parseFloat(primaryOrder.shipping) || 0,
+      tax: parseFloat(primaryOrder.tax) || 0,
+      paymentMethod: primaryOrder.paymentMethod || "online",
+      estimatedDelivery: primaryOrder.estimatedDelivery || "",
+      address: primaryOrder.address || {},
+      items: (primaryOrder.items || []).map((item) => ({
         id: item.id,
         name: item.name,
         image: item.image,
         quantity: item.quantity,
         sellingPrice: parseFloat(item.sellingPrice) || 0,
-        originalPrice: parseFloat(item.sellingPrice) * 1.2, // Assuming 20% discount
-        size:
-          item.variant?.attributes?.find(
-            (attr) => attr.name === "Size" || attr.name === "size"
-          )?.value || "N/A",
-        color:
-          item.variant?.attributes?.find(
-            (attr) => attr.name === "color" || attr.name === "Color"
-          )?.value || "N/A",
+        size: "Standard",
+        color: "Default",
       })),
+      allOrders: [primaryOrder],
     };
   };
 
-  const orderData = transformOrderData(orderDataFromAPI);
+  const orderData = transformOrderData();
 
   // Local state
   const [estimatedDelivery, setEstimatedDelivery] = useState("");
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+
+  // Handle redirect in useEffect
+  useEffect(() => {
+    if (!orderData) {
+      setShouldRedirect(true);
+    }
+  }, [orderData]);
+
+  // Perform navigation in useEffect
+  useEffect(() => {
+    if (shouldRedirect) {
+      navigate("/");
+    }
+  }, [shouldRedirect, navigate]);
 
   // Use API estimated delivery or calculate one
   useEffect(() => {
     if (orderData?.estimatedDelivery) {
-      setEstimatedDelivery(orderData.estimatedDelivery);
+      setEstimatedDelivery(
+        new Date(orderData.estimatedDelivery).toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      );
     } else {
       const deliveryDate = new Date();
       deliveryDate.setDate(
@@ -659,55 +907,58 @@ export default function OrderConfirmation() {
     try {
       const doc = new jsPDF();
 
-      // Header
+      // Header with styling
+      doc.setFillColor(59, 130, 246);
+      doc.rect(0, 0, 220, 40, "F");
+
       doc.setFontSize(20);
-      doc.setTextColor(40, 40, 40);
+      doc.setTextColor(255, 255, 255);
       doc.text("KamaiCart", 105, 20, { align: "center" });
 
       doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
+      doc.setTextColor(255, 255, 255);
       doc.text("INVOICE", 105, 30, { align: "center" });
 
       // Order Info
       doc.setFontSize(8);
       doc.setTextColor(150, 150, 150);
-      doc.text("Order Details", 14, 45);
+      doc.text("Order Details", 14, 55);
 
       doc.setFontSize(10);
       doc.setTextColor(40, 40, 40);
-      doc.text(`Order ID: ${orderData.orderId}`, 14, 52);
-      doc.text(`Order Date: ${new Date().toLocaleDateString()}`, 14, 58);
-      doc.text(`Estimated Delivery: ${estimatedDelivery}`, 14, 64);
+      doc.text(`Order ID: ${orderData.orderId}`, 14, 62);
+      doc.text(`Order Date: ${new Date().toLocaleDateString()}`, 14, 68);
+      doc.text(`Estimated Delivery: ${estimatedDelivery}`, 14, 74);
 
       // Shipping Info
       if (orderData.address) {
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150);
-        doc.text("Shipping Address", 14, 75);
+        doc.text("Shipping Address", 14, 85);
 
         doc.setFontSize(10);
         doc.setTextColor(40, 40, 40);
-        doc.text(orderData.address.name || "Customer", 14, 82);
+        doc.text(orderData.address.name || "Customer", 14, 92);
         doc.text(
           `${orderData.address.flat || ""}, ${orderData.address.area || ""}`,
           14,
-          88
+          98
         );
-        doc.text(orderData.address.address1 || "", 14, 94);
+        doc.text(orderData.address.address1 || "", 14, 104);
         if (orderData.address.address2)
-          doc.text(orderData.address.address2, 14, 100);
+          doc.text(orderData.address.address2, 14, 110);
         doc.text(
           `Postal Code: ${orderData.address.postal_code || ""}`,
           14,
-          106
+          116
         );
-        doc.text(`Phone: ${orderData.address.phone_number || ""}`, 14, 112);
+        doc.text(`Phone: ${orderData.address.phone_number || ""}`, 14, 122);
       }
 
       // Table Data
       const tableData = orderData.items.map((item, index) => [
         index + 1,
-        item.name.substring(0, 30),
+        item.name.substring(0, 30) + (item.name.length > 30 ? "..." : ""),
         item.size,
         item.color,
         item.quantity,
@@ -716,7 +967,7 @@ export default function OrderConfirmation() {
       ]);
 
       autoTable(doc, {
-        startY: orderData.address ? 120 : 75,
+        startY: orderData.address ? 130 : 85,
         head: [["#", "Product", "Size", "Color", "Qty", "Price", "Total"]],
         body: tableData,
         theme: "grid",
@@ -787,8 +1038,10 @@ export default function OrderConfirmation() {
         }
       );
 
-      doc.save(`invoice-${orderData.orderId}.pdf`);
-      toast.success("Invoice downloaded successfully!", { id: "invoice" });
+      doc.save(`kamaicart-${orderData.orderId}.pdf`);
+      toast.success("Invoice downloaded successfully!", {
+        id: "invoice",
+      });
     } catch (error) {
       console.error("Error generating invoice:", error);
       toast.error("Failed to generate invoice. Please try again.", {
@@ -802,7 +1055,6 @@ export default function OrderConfirmation() {
   const getPaymentMethodText = (method) => {
     if (!method) return "Unknown Payment Method";
 
-    // Normalize: extract method name if it's an object
     const methodName =
       typeof method === "object"
         ? method.name || method.payment_name || method.method || ""
@@ -822,189 +1074,269 @@ export default function OrderConfirmation() {
   const handleShareOrder = () => {
     if (!orderData) return;
 
+    const shareData = {
+      title: `Order ${orderData.orderId} - KamaiCart`,
+      text: `I just placed an order on KamaiCart! Order ID: ${orderData.orderId}, Total: ₹${total}`,
+    };
+
     if (navigator.share) {
-      navigator.share({
-        title: `Order ${orderData.orderId}`,
-        text: `I just placed an order on KamaiCart! Order ID: ${orderData.orderId}`,
-      });
+      navigator.share(shareData);
     } else {
-      navigator.clipboard.writeText(`Order ID: ${orderData.orderId}`);
+      navigator.clipboard.writeText(
+        `Order ID: ${orderData.orderId}\nTotal: ₹${total}\nEstimated Delivery: ${estimatedDelivery}`
+      );
       toast.success("Order details copied to clipboard");
     }
   };
 
-  const handleTrackOrder = () => {
-    if (!orderData) return;
-
-    navigate("/track-order", { state: { orderId: orderData.orderId } });
-    toast.success("Redirecting to order tracking");
-  };
-
   const handleContinueShopping = () => {
-    navigate("/");
+    navigate("/products");
   };
 
-  // If no order data, redirect to home
-  if (!orderData) {
-    navigate("/");
-    return null;
+  const handleContactSupport = () => {
+    window.location.href = "mailto:support@kamaicart.com";
+  };
+
+  // Group items by order for display
+  const getItemsGroupedByOrder = () => {
+    if (!orderData?.allOrders) return [];
+
+    return orderData.allOrders.map((order) => ({
+      orderId: order.orderId,
+      sellerId: order.sellerId,
+      items: order.items || [],
+      orderTotal: order.totalAmount,
+    }));
+  };
+
+  const ordersGrouped = getItemsGroupedByOrder();
+
+  // Show loading or redirect instead of rendering and then redirecting
+  if (shouldRedirect || !orderData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-              <CheckCircle className="text-green-600" size={40} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      {/* Animated Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-32 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-40 left-1/2 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center shadow-lg">
+                <CheckCircle className="text-green-600" size={48} />
+              </div>
+              <div className="absolute -top-2 -right-2">
+                <div className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-bounce">
+                  ✓
+                </div>
+              </div>
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+
+          <h1 className="text-4xl font-bold text-gray-900 mb-3 bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
             Order Confirmed!
           </h1>
-          <p className="text-lg text-gray-600 mb-4">
-            Thank you for your purchase. Your order has been confirmed.
+          <p className="text-xl text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed">
+            Thank you for your purchase! Your order has been confirmed and is
+            being processed.
           </p>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 inline-block">
-            <p className="text-blue-800 font-medium">
-              Order ID: <span className="font-bold">{orderData.orderId}</span>
-            </p>
-          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {/* Left Column - Order Details */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Delivery Information */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <Truck className="text-green-600" size={20} />
-                Delivery Information
+          <div className="xl:col-span-2 space-y-8">
+            {/* Delivery Timeline */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+                <div className="bg-green-100 p-2 rounded-lg">
+                  <Truck className="text-green-600" size={24} />
+                </div>
+                Delivery Timeline
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Estimated Delivery */}
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Calendar className="text-green-600" size={20} />
-                    <h3 className="font-semibold text-green-900">
-                      Estimated Delivery
-                    </h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                {/* Delivery Date */}
+                <div className="bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-2xl p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="bg-green-100 p-3 rounded-xl">
+                      <Calendar className="text-green-600" size={24} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-green-900 text-lg">
+                        Estimated Delivery
+                      </h3>
+                      <p className="text-green-800 font-semibold text-xl">
+                        {estimatedDelivery}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-green-800 font-medium">
-                    {estimatedDelivery}
-                  </p>
-                  <p className="text-green-700 text-sm mt-1">
-                    3-5 business days
+                  <p className="text-green-700 text-sm">
+                    Standard delivery • 3-5 business days
                   </p>
                 </div>
 
                 {/* Shipping Address */}
                 {orderData.address && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <MapPin className="text-blue-600" size={20} />
-                      <h3 className="font-semibold text-blue-900">
-                        Shipping Address
-                      </h3>
+                  <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-2xl p-6">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="bg-blue-100 p-3 rounded-xl">
+                        <MapPin className="text-blue-600" size={24} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-blue-900 text-lg">
+                          Shipping Address
+                        </h3>
+                      </div>
                     </div>
-                    <div className="text-blue-800">
-                      <p className="font-medium">{orderData.address.name}</p>
-                      <p className="text-sm">
+                    <div className="space-y-2 text-blue-800">
+                      <div className="flex items-center gap-2">
+                        <PinIcon size={16} className="text-blue-600" />
+                        <p className="font-semibold">
+                          {orderData.address.name}
+                        </p>
+                      </div>
+                      <p className="text-sm ml-6">
                         {orderData.address.flat}, {orderData.address.area}
                       </p>
-                      <p className="text-sm">{orderData.address.address1}</p>
+                      <p className="text-sm ml-6">
+                        {orderData.address.address1}
+                      </p>
                       {orderData.address.address2 && (
-                        <p className="text-sm">{orderData.address.address2}</p>
+                        <p className="text-sm ml-6">
+                          {orderData.address.address2}
+                        </p>
                       )}
-                      <p className="text-sm">
-                        Postal Code: {orderData.address.postal_code}
-                      </p>
-                      <p className="text-sm font-medium mt-1">
-                        Phone: {orderData.address.phone_number}
-                      </p>
+                      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-blue-200">
+                        <div className="flex items-center gap-2">
+                          <Mail size={14} className="text-blue-600" />
+                          <span className="text-xs">
+                            Postal: {orderData.address.postal_code}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone size={14} className="text-blue-600" />
+                          <span className="text-xs">
+                            {orderData.address.phone_number}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
-
-              {/* Order Status Timeline */}
-              <div className="mt-6">
-                <h3 className="font-semibold text-gray-900 mb-4">
-                  Order Status
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span className="text-green-600 font-medium">
-                      Order Confirmed
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-                    <span className="text-gray-500">Processing</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-                    <span className="text-gray-500">Shipped</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-                    <span className="text-gray-500">Out for Delivery</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-                    <span className="text-gray-500">Delivered</span>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* Order Items */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <Package className="text-blue-600" size={20} />
-                Order Items
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+                <div className="bg-blue-100 p-2 rounded-lg">
+                  <Package className="text-blue-600" size={24} />
+                </div>
+                Order Items ({orderData.items.length})
               </h2>
 
-              <div className="space-y-4">
-                {orderData.items.map((item) => (
+              <div className="space-y-8">
+                {ordersGrouped.map((orderGroup, groupIndex) => (
                   <div
-                    key={item.id}
-                    className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg"
+                    key={orderGroup.orderId}
+                    className="border border-gray-200 rounded-2xl overflow-hidden"
                   >
-                    <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
-                      {item.image ? (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500">
-                          No Image
+                    {/* Order Header */}
+                    <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="font-bold text-gray-900">
+                            Order: {orderGroup.orderId}
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            Seller ID: {orderGroup.sellerId}
+                          </p>
                         </div>
-                      )}
+                        <div className="text-right">
+                          <p className="text-sm text-gray-600">Order Total</p>
+                          <p className="font-bold text-blue-600">
+                            ₹{parseFloat(orderGroup.orderTotal).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">
-                        {item.name}
-                      </h3>
-                      <p className="text-gray-600 text-sm">
-                        Quantity: {item.quantity}
-                      </p>
-                      <p className="text-gray-600 text-sm">
-                        Size: {item.size} | Color: {item.color}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-900">
-                        ₹{(item.sellingPrice * item.quantity).toLocaleString()}
-                      </p>
-                      <p className="text-gray-600 text-sm line-through">
-                        ₹{(item.originalPrice * item.quantity).toLocaleString()}
-                      </p>
+
+                    {/* Order Items */}
+                    <div className="p-6 space-y-4">
+                      {orderGroup.items.map((item, itemIndex) => (
+                        <div
+                          key={`${item.id}-${itemIndex}`}
+                          className="flex items-center gap-6 p-4 border border-gray-200 rounded-xl hover:shadow-md transition-all duration-300 bg-white"
+                        >
+                          <div className="relative">
+                            <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden shadow-sm">
+                              {item.image ? (
+                                <img
+                                  src={item.image}
+                                  alt={item.name}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.target.style.display = "none";
+                                    e.target.nextSibling.style.display = "flex";
+                                  }}
+                                />
+                              ) : null}
+                              <div
+                                className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-500 ${
+                                  item.image ? "hidden" : "flex"
+                                }`}
+                              >
+                                <Package size={24} />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-gray-900 text-lg mb-2 truncate">
+                              {item.name}
+                            </h3>
+                            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                              <span className="bg-gray-100 px-3 py-1 rounded-full">
+                                Size: Standard
+                              </span>
+                              <span className="bg-gray-100 px-3 py-1 rounded-full">
+                                Color: Default
+                              </span>
+                              <span className="bg-gray-100 px-3 py-1 rounded-full">
+                                Qty: {item.quantity}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            <p className="font-bold text-gray-900 text-lg">
+                              ₹
+                              {(
+                                parseFloat(item.sellingPrice) * item.quantity
+                              ).toLocaleString()}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              ₹{parseFloat(item.sellingPrice).toLocaleString()}{" "}
+                              each
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
@@ -1012,46 +1344,71 @@ export default function OrderConfirmation() {
             </div>
 
             {/* Payment Information */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <CreditCard className="text-purple-600" size={20} />
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+                <div className="bg-purple-100 p-2 rounded-lg">
+                  <CreditCard className="text-purple-600" size={24} />
+                </div>
                 Payment Information
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">
-                    Payment Method
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-6">
+                  <h3 className="font-bold text-gray-900 mb-4 text-lg">
+                    Payment Details
                   </h3>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <CreditCard className="text-purple-600" size={20} />
+                  <div className="flex items-center gap-4">
+                    <div className="bg-white p-3 rounded-xl shadow-sm">
+                      <CreditCard className="text-purple-600" size={24} />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">
+                      <p className="font-semibold text-gray-900 text-lg">
                         {getPaymentMethodText(orderData.paymentMethod)}
                       </p>
-                      <p className="text-gray-600 text-sm">
+                      <p className="text-gray-600">
                         {(() => {
                           const method = orderData.paymentMethod;
                           const methodName =
-                            typeof method === "object"
-                              ? method.name ||
-                                method.payment_name ||
-                                method.method ||
-                                ""
-                              : method;
-
-                          if (
-                            typeof methodName === "string" &&
-                            methodName.toLowerCase().includes("cash")
-                          ) {
-                            return "Pay when you receive";
-                          } else {
-                            return "Paid successfully";
-                          }
+                            typeof method === "object" ? method.name : method;
+                          return methodName?.toLowerCase().includes("cash")
+                            ? "Pay when you receive"
+                            : "Paid successfully";
                         })()}
                       </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-2xl p-6">
+                  <h3 className="font-bold text-gray-900 mb-4 text-lg">
+                    Order Summary
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-gray-600">
+                      <span>Items ({orderData.items.length})</span>
+                      <span>₹{subtotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>Shipping</span>
+                      <span
+                        className={
+                          shipping === 0 ? "text-green-600 font-semibold" : ""
+                        }
+                      >
+                        {shipping === 0 ? "FREE" : `₹${shipping}`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-gray-600">
+                      <span>Tax</span>
+                      <span>₹{tax.toFixed(2)}</span>
+                    </div>
+                    <div className="border-t border-gray-200 pt-3">
+                      <div className="flex justify-between text-lg font-bold text-gray-900">
+                        <span>Total Amount</span>
+                        <span className="text-blue-600">
+                          ₹{total.toFixed(2)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1059,125 +1416,114 @@ export default function OrderConfirmation() {
             </div>
           </div>
 
-          {/* Right Column - Order Summary & Actions */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 space-y-6">
-              {/* Order Summary */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">
-                  Order Summary
+          {/* Right Column - Quick Actions & Support */}
+          <div className="xl:col-span-1">
+            <div className="sticky top-8 space-y-8">
+              {/* Quick Actions */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                  Quick Actions
                 </h2>
 
-                <div className="space-y-3 mb-6">
-                  <div className="flex justify-between text-gray-600">
-                    <span>Subtotal</span>
-                    <span>₹{subtotal.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-600">
-                    <span>Shipping</span>
-                    <span className={shipping === 0 ? "text-green-600" : ""}>
-                      {shipping === 0 ? "FREE" : `₹${shipping}`}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-gray-600">
-                    <span>Tax</span>
-                    <span>₹{tax.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                <div className="border-t border-gray-200 pt-4 mb-6">
-                  <div className="flex justify-between text-lg font-bold text-gray-900">
-                    <span>Total</span>
-                    <span>₹{total.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="space-y-3">
-                  <button
-                    onClick={handleTrackOrder}
-                    className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Truck size={20} />
-                    Track Your Order
-                  </button>
-
+                <div className="space-y-4">
                   <button
                     onClick={handleDownloadInvoice}
                     disabled={isGeneratingInvoice}
-                    className="w-full border border-gray-300 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-white border-2 border-gray-300 text-gray-700 py-4 rounded-2xl font-bold hover:bg-gray-50 hover:border-blue-500 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
-                    <Download size={20} />
-                    {isGeneratingInvoice ? "Generating..." : "Download Invoice"}
+                    <Download size={24} />
+                    {isGeneratingInvoice
+                      ? "Generating Invoice..."
+                      : "Download Invoice"}
                   </button>
 
                   <button
                     onClick={handleShareOrder}
-                    className="w-full border border-gray-300 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                    className="w-full bg-white border-2 border-gray-300 text-gray-700 py-4 rounded-2xl font-bold hover:bg-gray-50 hover:border-green-500 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg flex items-center justify-center gap-3"
                   >
-                    <Share2 size={20} />
-                    Share Order
+                    <Share2 size={24} />
+                    Share Order Details
                   </button>
                 </div>
               </div>
 
               {/* Support & Next Steps */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-lg border border-blue-200 p-8">
+                <h3 className="font-bold text-gray-900 mb-6 text-xl">
                   What's Next?
                 </h3>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <Clock className="text-blue-600 mt-1" size={16} />
+                <div className="space-y-6">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-blue-100 p-3 rounded-xl flex-shrink-0">
+                      <Clock className="text-blue-600" size={20} />
+                    </div>
                     <div>
-                      <p className="font-medium text-gray-900">
+                      <p className="font-semibold text-gray-900">
                         Order Processing
                       </p>
-                      <p className="text-gray-600 text-sm">
-                        We'll start preparing your order within 24 hours
+                      <p className="text-gray-600 text-sm mt-1">
+                        We'll start preparing your order within the next few
+                        hours
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <Truck className="text-green-600 mt-1" size={16} />
+
+                  <div className="flex items-start gap-4">
+                    <div className="bg-green-100 p-3 rounded-xl flex-shrink-0">
+                      <Truck className="text-green-600" size={20} />
+                    </div>
                     <div>
-                      <p className="font-medium text-gray-900">
+                      <p className="font-semibold text-gray-900">
                         Shipping Updates
                       </p>
-                      <p className="text-gray-600 text-sm">
-                        You'll receive tracking information via email
+                      <p className="text-gray-600 text-sm mt-1">
+                        Track your order with real-time updates via email & SMS
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <Shield className="text-purple-600 mt-1" size={16} />
+
+                  <div className="flex items-start gap-4">
+                    <div className="bg-purple-100 p-3 rounded-xl flex-shrink-0">
+                      <Shield className="text-purple-600" size={20} />
+                    </div>
                     <div>
-                      <p className="font-medium text-gray-900">Need Help?</p>
-                      <p className="text-gray-600 text-sm">
-                        Contact support for any questions about your order
+                      <p className="font-semibold text-gray-900">Need Help?</p>
+                      <p className="text-gray-600 text-sm mt-1">
+                        Our support team is here to help with any questions
                       </p>
                     </div>
                   </div>
                 </div>
+
+                <button
+                  onClick={handleContactSupport}
+                  className="w-full mt-6 bg-white border-2 border-blue-200 text-blue-600 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-300 flex items-center justify-center gap-2"
+                >
+                  <Mail size={18} />
+                  Contact Support
+                </button>
               </div>
 
               {/* Continue Shopping */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <div className="text-center">
-                  <p className="text-gray-600 mb-4">Want to explore more?</p>
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl shadow-lg border border-green-200 p-8 text-center">
+                <div className="bg-green-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <ShoppingBag className="text-green-600" size={28} />
+                </div>
+
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">
+                  Explore More
+                </h3>
+                <p className="text-gray-600 mb-6 text-sm">
+                  Discover more amazing products and deals
+                </p>
+
+                <div className="space-y-3">
                   <button
                     onClick={handleContinueShopping}
-                    className="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 rounded-2xl font-bold hover:from-green-700 hover:to-emerald-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
                   >
                     <ShoppingBag size={20} />
                     Continue Shopping
-                  </button>
-                  <button
-                    onClick={() => navigate("/")}
-                    className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mt-3"
-                  >
-                    <Home size={16} />
-                    Back to Home
                   </button>
                 </div>
               </div>
@@ -1185,6 +1531,33 @@ export default function OrderConfirmation() {
           </div>
         </div>
       </div>
+
+      {/* Add custom animations */}
+      <style jsx>{`
+        @keyframes blob {
+          0% {
+            transform: translate(0px, 0px) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
+          100% {
+            transform: translate(0px, 0px) scale(1);
+          }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
     </div>
   );
 }
